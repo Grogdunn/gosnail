@@ -95,7 +95,10 @@ func main() {
 		}
 
 		count = count + 1
-		img = convertToImg(f)
+		img, err = convertToImg(f)
+		if err != nil {
+			panic(err)
+		}
 		return img
 	})
 	videoPosition.AddListener(binding.NewDataListener(func() {
@@ -160,7 +163,7 @@ func getVideoStreams(inputFormatContext *astiav.FormatContext) map[int]*stream {
 	return streams
 }
 
-func convertToImg(frame *astiav.Frame) image.Image {
+func convertToImg(frame *astiav.Frame) (image.Image, error) {
 	w := frame.Width()
 	h := frame.Height()
 	var subSampleRatio image.YCbCrSubsampleRatio
@@ -177,6 +180,8 @@ func convertToImg(frame *astiav.Frame) image.Image {
 		subSampleRatio = image.YCbCrSubsampleRatio411
 	case astiav.PixelFormatYuv410P:
 		subSampleRatio = image.YCbCrSubsampleRatio410
+	default:
+		return nil, errors.New("unknown format")
 	}
 
 	img := &image.YCbCr{
@@ -188,5 +193,5 @@ func convertToImg(frame *astiav.Frame) image.Image {
 		SubsampleRatio: subSampleRatio,
 		Rect:           image.Rect(0, 0, w, h),
 	}
-	return img
+	return img, nil
 }
