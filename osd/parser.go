@@ -35,9 +35,14 @@ type Position struct {
 	X, Y uint32
 }
 
-func Parse(file *os.File) *FileOsd {
+func Parse(file string) *FileOsd {
 	var toReturn FileOsd
-	reader := bufio.NewReader(file)
+	osdFile, err := os.Open(file)
+	if err != nil {
+		panic("cannot open file") //TODO
+	}
+	defer osdFile.Close()
+	reader := bufio.NewReader(osdFile)
 	header := make([]byte, headerBytes)
 	readFrame, err := io.ReadFull(reader, header)
 	if err != nil || readFrame < headerBytes {
